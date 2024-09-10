@@ -1,4 +1,4 @@
-We will use README as log before finishing off.
+We will use README as log before we make it public.
 
 ## Summary of results so far:
 
