@@ -20,4 +20,9 @@ train performance also looks sometimes with delays
     - Kernel distance (need to revisit, I might have not implemented correctly)
     - weight jacobian SVD
 
+### Some unplesent inconvenience to improve in this repo:
+Multiple folders (cluster and local) for different part of this project; will group things together in this attempt.
+
+***
+
 
