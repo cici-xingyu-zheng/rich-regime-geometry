@@ -32,4 +32,6 @@ Multiple folders (cluster and local) for different part of this project; will gr
 **TO-DO:**
 1. check if model and if capacity measures run successfully locally
 2. remove checkpoints that are are no longer needed to free up space
-
+3. list of models to do
+4. the MNIST example
+5. move over analysis functions
