@@ -20,9 +20,16 @@ train performance also looks sometimes with delays
     - Kernel distance (need to revisit, I might have not implemented correctly)
     - weight jacobian SVD
 
-### Some unplesent inconvenience to improve in this repo:
+### Some unplesent inconvenience that we will improve in this repo:
 Multiple folders (cluster and local) for different part of this project; will group things together in this attempt.
 
 ***
 
+## Log for progress
+
+### 09/10/24
+
+**TO-DO:**
+1. check if model and if capacity measures run successfully locally
+2. remove checkpoints that are are no longer needed to free up space
 

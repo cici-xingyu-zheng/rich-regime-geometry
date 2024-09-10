@@ -1,0 +1,44 @@
+name: manifold
+channels:
+  - defaults
+dependencies:
+  - scikit-learn==0.21.3
+  - numpy==1.17.0
+  - python=3.6
+  - autograd==1.3
+  - ipykernel
+  - matplotlib
+  - pandas
+  - readline
+  - zlib
+  - pickleshare
+  - pygments
+  - libcxx
+  - ipython_genutils
+  - xz
+  - ncurses
+  - decorator
+  - ptyprocess
+  - libffi
+  - simplegeneric
+  - wcwidth
+  - pip
+  - ca-certificates
+  - sqlite
+  - openssl
+  - traitlets
+  - wheel
+  - setuptools
+  - tk
+  - certifi
+  - pexpect
+  - six
+  - prompt_toolkit
+  - ipython
+  - scipy==1.2.0
+#  - appnope # macos specific
+#  - libzlib # the following 3 were installed seperately by conda-forge
+#  - python_abi
+#  - libsqlite 
+
+prefix: /Users/xinzheng/opt/anaconda3/envs/manifold
