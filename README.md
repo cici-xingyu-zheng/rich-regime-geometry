@@ -33,12 +33,17 @@ from now on to next week, I can train 42 models with 10000 epochs :') if I don't
 - model can train okay in this project directory, might need some linting and output organization.
 - manifold environment successfully set up as well yayy
 - removed some checkpoints that are are no longer needed to free up space, and also good news is that we seem only need to retrain for 2 networks! Already doing it [Harvest end of Wed.]
+- fixed the kernel distance analysis
+- how to access the aignment: the CKA measurement
 
+### 09/11/24
+- finish running the last networks (hopefully) and will need to put them together;
+- will need to write the script and have it running for capacity measures (center correlation? should we even consider); but before we should delete some activations
 
 **TO-DO:**
+2. implement CKA
 3. need to remove some activation as well; locally they take up 50+ G... but also need to figure out how much capacity measurement we need to re-run
-4. move the MNIST example here as well?
-5. discuss with Ari and Kyle the CKA measurement
+4. move the MNIST example here
 6. fix the kernel distance analysis
 
 ## Appendix planning
