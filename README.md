@@ -27,11 +27,22 @@ Multiple folders (cluster and local) for different part of this project; will gr
 
 ## Log for progress
 
+from now on to next week, I can train 42 models with 10000 epochs :') if I don't consider replicating this folder to Alex's cluster.
+
 ### 09/10/24
+- model can train okay in this project directory, might need some linting and output organization.
+- manifold environment successfully set up as well yayy
+- removed some checkpoints that are are no longer needed to free up space, and also good news is that we seem only need to retrain for 2 networks! Already doing it [Harvest end of Wed.]
+
 
 **TO-DO:**
-1. check if model and if capacity measures run successfully locally
-2. remove checkpoints that are are no longer needed to free up space
-3. list of models to do
-4. the MNIST example
-5. move over analysis functions
+3. need to remove some activation as well; locally they take up 50+ G... but also need to figure out how much capacity measurement we need to re-run
+4. move the MNIST example here as well?
+5. discuss with Ari and Kyle the CKA measurement
+6. fix the kernel distance analysis
+
+## Appendix planning
+
+1. all 3 types, 3 examples each
+2. variability 
+3. training example capacity and test example capacity 

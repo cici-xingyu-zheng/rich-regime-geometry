@@ -64,6 +64,7 @@ class CNN(nn.Module):
         x = self.fc2(x)
         return x * self.output_scale
 
+
 def train(model, train_loader, test_loader, criterion, optimizer, device, num_epochs, checkpoint_dir=None):
     train_accuracies = []
     test_accuracies = []
@@ -155,7 +156,7 @@ def visualize(train_accuracies, test_accuracies, train_losses, test_losses, titl
     ax1.set_xscale('log') 
     ax1.set_ylabel('Accuracy (%)')
     ax1.set_title('Training and Test Accuracy')
-    ax1.set_xlim([1, 50000])
+    ax1.set_xlim([1,10000])
     ax1.legend()
     
     ax2.plot(train_losses, label='Train Loss')
@@ -165,7 +166,7 @@ def visualize(train_accuracies, test_accuracies, train_losses, test_losses, titl
     ax2.set_xscale('log') 
     ax2.set_yscale('log') 
     ax2.set_title('Training and Test Loss')
-    ax2.set_xlim([1, 50000])
+    ax2.set_xlim([1, 10000])
     ax2.legend()
     
     plt.suptitle(title)
@@ -173,8 +174,8 @@ def visualize(train_accuracies, test_accuracies, train_losses, test_losses, titl
     plt.tight_layout()
     plt.show()
     # Save the lists into a single .npy file
-    np.savez(f'output/{title}_training_data.npy', train_accuracies=train_accuracies, test_accuracies=test_accuracies,
+    np.savez(f'../output/{title}_training_data.npy', train_accuracies=train_accuracies, test_accuracies=test_accuracies,
             train_losses=train_losses, test_losses=test_losses)
-    fig.savefig(f'output/{title}.pdf')
+    fig.savefig(f'../output/{title}.pdf')
 
 
