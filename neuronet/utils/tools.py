@@ -7,12 +7,12 @@ from neuronet.utils import models
 num_classes = 47
 
 
-def get_models(param_combo, checkpoint_parent_dir, activation_parent_dir, epochs, device):
+def get_models(param_combo, checkpoint_parent_dir, output_parent_dir, epochs, device):
 
     subdir = '_'.join([f"{param_name}:{value}" for param_name, value in param_combo.items()])
     checkpoint_dir = os.path.join(checkpoint_parent_dir, subdir)
-    activation_dir = os.path.join(activation_parent_dir, subdir)
-    os.makedirs(activation_dir, exist_ok=True)
+    output_dir = os.path.join(output_parent_dir, subdir)
+    os.makedirs(output_dir, exist_ok=True)
     # Load trained networks:
     MLPmodels = []
     for epoch in epochs:
@@ -21,7 +21,7 @@ def get_models(param_combo, checkpoint_parent_dir, activation_parent_dir, epochs
         model.load_state_dict(checkpoint['state_dict'])
         MLPmodels.append(model)
 
-    return MLPmodels, activation_dir
+    return MLPmodels, output_dir
 
 def flatten_activations(activations):
     """

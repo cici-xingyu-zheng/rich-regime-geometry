@@ -40,23 +40,33 @@ from now on to next week, I can train 42 models with 10000 epochs :') if I don't
 - finished running the last networks (hopefully) and 
 - organized them in a nicer way!!!
 - note to self that all but `output_scale = 0.1` the random seed is 10, that one we used the seed 314159 --- alright I am re-training this one for consistency
-- get activations 
+- got all activations 
+- start running capacity measurement locally and on the cluster (!) 130 hrs in total... so will only be able to harvest result on Sundzy :') if everything goes well. oh my...
+- informed both Saket and Alex about this endeavor, they are okay, but assigned me stuff meanwhile fine..
 
-Where is my network checkpoints and activations:
+Where are my network checkpoints and activations:
 
 ```
 data/Geometry/new/checkpoints
 data/Geometry/new/activations
 ```
-- will need to write the script and have it running for capacity measures (center correlation? should we even consider); but before we should delete some activations
+
+### 09/12/24
+-  `output_scale = 0.1` hasn't been been fed into the pipeline for capacity measure; will do that soon as local or cluster finish; should be local
+- create the wrong folder; now capacity measure results is in `~/output/capacity_measures` and will move them over 
+- for outputs now let's start using output relative to the script's dir, so that it's not dependent on where we run things.
+- Jacobian running and should be done very quickly
+
 
 **TO-DO:**
+1. move over other measures: 
+    1. input and weight jacobian svds, kernel distance
+    2. out of distribution generalization 
 2. implement CKA
 3. need to remove some activation as well; locally they take up 50+ G... but also need to figure out how much capacity measurement we need to re-run
-4. move the MNIST example here
+4. move the MNIST example here, make the format conform
 5. code to reproduce the example networks 
 6. weight norm over checkpoints (maybe)
-7. dont forget to get 20000 - 50000 activations
 
 
 

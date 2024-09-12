@@ -1,8 +1,8 @@
 
 import torch
+import os
 import numpy as np
 import matplotlib.pyplot as plt
-
 
 
 def weight_jacobian_svd(model, inputs, normalized = False):
@@ -142,7 +142,7 @@ def input_signular_average(jacobian_average, normalized = False):
     return S.cpu().numpy()
 
 
-def plot_spectrum(S0, Ss, S0_normalized, Ss_normalized, epochs, name, wrt = 'weight'):
+def plot_spectrum(S0, Ss, S0_normalized, Ss_normalized, epochs, output_dir, wrt = 'weight'):
     # Plot the singular value spectra
     cmap = plt.get_cmap('plasma')
     norm = plt.Normalize(np.log10(min(epochs)), np.log10(max(epochs)))
@@ -167,8 +167,72 @@ def plot_spectrum(S0, Ss, S0_normalized, Ss_normalized, epochs, name, wrt = 'wei
     ax[1].set_ylabel('Singular Value')
     ax[1].set_title(r'Normalized [ $J = \nabla_{\theta} f(x; \theta)/ ||\; J||_F$)]')
     ax[1].legend(loc = [1.01, -.05])
-    plt.subplots_adjust(wspace=0.2)  # Adjust the spacing between subplots
+    plt.subplots_adjust(wspace=0.2) 
+    filename = os.path.join(output_dir, f'J-{wrt}.pdf')
+    fig.savefig(filename,  bbox_inches='tight')
+    plt.close(fig)  
 
-    plt.show()
 
-    fig.savefig(f'output/analysis/{name}_J-{wrt}.pdf',  bbox_inches='tight')
+
+def compute_ntk_at_epoch(model, dataloader, device):
+    # Set requires_grad to True for all model parameters
+    for param in model.parameters():
+        param.requires_grad = True
+    
+    ntk_sum = None
+    num_batches = 0
+    
+    for inputs, _ in dataloader:
+        inputs = inputs.to(device)
+        
+        # Compute the Jacobian matrix
+        model.zero_grad()
+        outputs = model(inputs)
+        jacobian = []
+        
+        for output in outputs:
+            grad_output = torch.zeros_like(output)
+            grad_output[:] = 1.0
+            gradients = torch.autograd.grad(output, model.parameters(), grad_outputs=grad_output, create_graph=True)
+            jacobian.append(torch.cat([g.view(-1) for g in gradients]))
+        
+        jacobian = torch.stack(jacobian)
+        
+        # Compute the NTK for the current batch
+        ntk_batch = torch.matmul(jacobian, jacobian.t())
+        
+        # Accumulate the NTK sum
+        if ntk_sum is None:
+            ntk_sum = ntk_batch.cpu().detach()
+        else:
+            ntk_sum += ntk_batch.cpu().detach()
+        
+        num_batches += 1
+    
+    # Compute the average NTK over all batches
+    ntk_avg = ntk_sum / num_batches
+    
+    return ntk_avg.numpy()
+
+def kernel_distance(Kt1, Kt2):
+    """
+    Compute the kernel distance between two Neural Tangent Kernels.
+    
+    Args:
+        Kt1: NTK matrix at time t1
+        Kt2: NTK matrix at time t2
+    
+    Returns:
+        The kernel distance between Kt1 and Kt2
+    """
+    # Compute the Frobenius inner product
+    frobenius_inner_product = np.sum(Kt1 * Kt2)
+    
+    # Compute the Frobenius norms
+    frobenius_norm_Kt1 = np.sqrt(np.sum(Kt1**2))
+    frobenius_norm_Kt2 = np.sqrt(np.sum(Kt2**2))
+    
+    # Compute the kernel distance
+    kernel_dist = 1 - frobenius_inner_product / (frobenius_norm_Kt1 * frobenius_norm_Kt2)
+    
+    return kernel_dist
