@@ -34,8 +34,8 @@ np.random.seed(seed)
 
 num_epochs = 10000
 
-param_names = ['train_size', 'weight_scale','weight_decay', 'output_scale', 'optimizer']
-param_vals = [1000, 10,  0.001, 1, 'Adam']
+param_names = [ 'optimizer', 'weight_scale', 'train_size', 'output_scale','weight_decay']
+param_vals = ['Adam', 10, 1000, 1,  0.001]
 params = dict(zip(param_names, param_vals))
 
 checkpoint_parent_dir = '/data/cici/Geometry/new/checkpoints'
