@@ -34,13 +34,21 @@ from now on to next week, I can train 42 models with 10000 epochs :') if I don't
 - manifold environment successfully set up as well yayy
 - removed some checkpoints that are are no longer needed to free up space, and also good news is that we seem only need to retrain for 2 networks! Already doing it [Harvest end of Wed.]
 - fixed the kernel distance analysis
-- how to access the aignment: the CKA measurement
+- how to access the aignment: the CKA measurement?
 
 ### 09/11/24
-- finish running the last networks (hopefully) and 
-- organize them in a nicer way!!!
+- finished running the last networks (hopefully) and 
+- organized them in a nicer way!!!
+- note to self that all but `output_scale = 0.1` the random seed is 10, that one we used the seed 314159 --- alright I am re-training this one for consistency
+- get activations 
+
+Where is my network checkpoints and activations:
+
+```
+data/Geometry/new/checkpoints
+data/Geometry/new/activations
+```
 - will need to write the script and have it running for capacity measures (center correlation? should we even consider); but before we should delete some activations
-- note to self that all but `output_scale = 0.1` the random seed is 10, that one we used the seed 314159.
 
 **TO-DO:**
 2. implement CKA
@@ -48,12 +56,9 @@ from now on to next week, I can train 42 models with 10000 epochs :') if I don't
 4. move the MNIST example here
 5. code to reproduce the example networks 
 6. weight norm over checkpoints (maybe)
+7. dont forget to get 20000 - 50000 activations
 
-## Where is my data:
 
-```
-data/Geometry/new/checkpoints
-```
 
 
 ## Appendix planning

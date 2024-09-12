@@ -8,7 +8,6 @@ from tqdm import tqdm
 import os
 
 
-    
 # MLP model
 hidden_sizes = [128, 512, 128] # can sandwich a larger width? or increase them all to be large..
 class MLP(nn.Module):
@@ -127,14 +126,9 @@ def train(model, train_loader, test_loader, criterion, optimizer, device, num_ep
 
         # progress bar:
         progress_bar.set_description(f"Epoch [{epoch+1}/{num_epochs}], Train Loss: {train_loss:.4f}, Train Acc: {train_accuracy:.2f}%, Test Loss: {test_loss:.4f}, Test Acc: {test_accuracy:.2f}%")
-
-        # save model checkpoint //added 04/28/24
-        # if checkpoint_dir and (epoch + 1) % 500 == 0:
-        # if checkpoint_dir and (epoch + 1) in [5000, 6000, 7000, 8000, 9000, 10000]:
-        # if checkpoint_dir and ((epoch + 1) % 500 == 0 or  (epoch + 1) in [5000, 6000, 7000, 8000, 9000, 10000]):
-        # if checkpoint_dir and  (epoch + 1) in [50, 100, 200, 300, 400]:
-        # to_save = [1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 100, 200, 300, 400, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 20000, 30000, 40000, 50000]  # added 05/13/24    
-        to_save = [1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 100, 200, 300, 400, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 5000, 6000, 7000, 8000, 9000, 10000]  # added 05/13/24    
+ 
+        # to_save = [1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 100, 200, 300, 400, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 20000, 30000, 40000, 50000] 
+        to_save = [1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 100, 200, 300, 400, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 5000, 6000, 7000, 8000, 9000, 10000]  
 
         if checkpoint_dir and  (epoch + 1) in to_save: 
 
