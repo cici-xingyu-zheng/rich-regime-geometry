@@ -9,8 +9,9 @@ from torch.utils.data import DataLoader
 
 
 import os
-import numpy as np
 import random
+import seaborn as sns
+import numpy as np
 import matplotlib.pyplot as plt
 import pickle as pkl
 
@@ -63,10 +64,35 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 output_parent_dir = os.path.join(script_dir, "..", "output/kernel_distance")
 
 # main:
+
+def compute_pairwise_distances(models, dataloader):
+    n = len(models)
+    distance_matrix = np.zeros((n, n))
+    
+    for i in range(n):
+        ntk_i = analysis.compute_ntk_at_epoch(models[i], dataloader, device)
+        for j in range(i, n):
+            ntk_j = analysis.compute_ntk_at_epoch(models[j], dataloader, device)
+            distance = analysis.kernel_distance(ntk_i, ntk_j)
+            distance_matrix[i, j] = distance
+            distance_matrix[j, i] = distance
+
+    return distance_matrix
+
+def plot_heatmap(distance_matrix, param_list, save_path):
+
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(distance_matrix, annot=False, cmap='viridis')
+    plt.title(f'Kernel Distance Heatmap for {param_list}')
+    plt.xlabel('Model Checkpoint')
+    plt.ylabel('Model Checkpoint')
+    plt.savefig(save_path)
+    plt.close()
+
+
 for param_list in param_lists:
     print()
     print('inspecting', param_list, '\n')
-    dlists = []
     param_combo = dict(zip(param_names, param_list))
 
     MLPmodels, output_dir = tools.get_models(param_combo, checkpoint_parent_dir, output_parent_dir, epochs, device)
@@ -83,23 +109,16 @@ for param_list in param_lists:
         for param in model0.parameters():
             param.data *= weight_scale
 
-    ntk_0 = analysis.compute_ntk_at_epoch(model0, test_dataloader, device)
-    ds = []
-    for i, model in enumerate(MLPmodels):
-        d = analysis.kernel_distance(ntk_0, analysis.compute_ntk_at_epoch(model, test_dataloader, device))
-        ds.append(d)
-        print(f'epoch {epochs[i]} kernel distance:', d)
-    dlists.append(ds)
-    
-    data = {
-        'epoch': epochs,
-        'dist': dlists
-    }
-    
-    filename = os.path.join(output_dir, f'K-dist.pkl')
-    with open(filename, 'wb') as file:
-        pkl.dump(data, file)
+    MLPmodels = [model0] + MLPmodels
+    distance_matrix = compute_pairwise_distances(MLPmodels, test_dataloader)
+    figname = os.path.join(output_dir, 'kernel_dist.pdf')
+
+    plot_heatmap(distance_matrix, param_list, figname)
+
+    filename = os.path.join(output_dir, f'K-dist.npy')
+    np.save(filename, distance_matrix)
 
     print(f"Data saved as {filename}")
 
   
+
