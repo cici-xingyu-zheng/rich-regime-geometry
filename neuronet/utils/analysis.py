@@ -237,80 +237,82 @@ def kernel_distance(Kt1, Kt2):
     
     return kernel_dist
 
-def compute_ntk_full_at_epoch(model, dataloader, device):
-    # Enable gradient computation for all model parameters
-    for param in model.parameters():
-        param.requires_grad = True
+# def compute_ntk_full_at_epoch(model, dataloader, device):
+#     # Enable gradient computation for all model parameters
+#     for param in model.parameters():
+#         param.requires_grad = True
     
-    all_jacobians = []
-    all_labels = []
+#     all_jacobians = []
+#     all_labels = []
     
-    for inputs, labels in dataloader:
-        # Move inputs to the specified device (e.g., GPU)
-        inputs = inputs.to(device)
+#     for inputs, labels in dataloader:
+#         # Move inputs to the specified device (e.g., GPU)
+#         inputs = inputs.to(device)
         
-        # Reset gradients to zero before computing new ones
-        model.zero_grad()
-        # Forward pass through the model
-        outputs = model(inputs)
-        jacobian = []
+#         # Reset gradients to zero before computing new ones
+#         model.zero_grad()
+#         # Forward pass through the model
+#         outputs = model(inputs)
+#         jacobian = []
         
-        # Compute Jacobian for each output
-        for output in outputs:
-            # Create a gradient output tensor filled with ones
-            grad_output = torch.zeros_like(output)
-            grad_output[:] = 1.0
-            # Compute gradients w.r.t. model parameters
-            gradients = torch.autograd.grad(output, model.parameters(), grad_outputs=grad_output, create_graph=True)
-            # Flatten and concatenate gradients into a single vector
-            jacobian.append(torch.cat([g.view(-1) for g in gradients]))
+#         # Compute Jacobian for each output
+#         for output in outputs:
+#             # Create a gradient output tensor filled with ones
+#             grad_output = torch.zeros_like(output)
+#             grad_output[:] = 1.0
+#             # Compute gradients w.r.t. model parameters
+#             gradients = torch.autograd.grad(output, model.parameters(), grad_outputs=grad_output, create_graph=True)
+#             # Flatten and concatenate gradients into a single vector
+#             jacobian.append(torch.cat([g.view(-1) for g in gradients]))
         
-        # Stack Jacobians for all outputs in this batch
-        jacobian = torch.stack(jacobian)
+#         # Stack Jacobians for all outputs in this batch
+#         jacobian = torch.stack(jacobian)
         
-        all_jacobians.append(jacobian)
-        all_labels.append(labels)
+#         all_jacobians.append(jacobian)
+#         all_labels.append(labels)
     
-    # Concatenate Jacobians and labels from all batches
-    full_jacobian = torch.cat(all_jacobians, dim=0)
-    full_labels = torch.cat(all_labels, dim=0)
+#     # Concatenate Jacobians and labels from all batches
+#     full_jacobian = torch.cat(all_jacobians, dim=0)
+#     full_labels = torch.cat(all_labels, dim=0)
     
-    # Compute the NTK by matrix multiplication of Jacobian with its transpose
-    ntk = torch.mm(full_jacobian, full_jacobian.t())
+#     # Compute the NTK by matrix multiplication of Jacobian with its transpose
+#     ntk = torch.mm(full_jacobian, full_jacobian.t())
     
-    # Return NTK and labels as NumPy arrays on CPU
-    return ntk.cpu().detach().numpy(), full_labels.cpu().numpy()
+#     # Return NTK and labels as NumPy arrays on CPU
+#     return ntk.cpu().detach().numpy(), full_labels.cpu().numpy()
 
 
-def compute_cka(K, y):
-    """
-    Compute Centered Kernel Alignment (CKA)
+# def compute_cka(K, y):
     
-    K: NTK matrix (numpy array)
-    y: labels (numpy array)
-    """
-    # One-hot encode the labels
-    num_classes = len(np.unique(y))
-    y_onehot = np.eye(num_classes)[y]
+#     """
+#     Compute Centered Kernel Alignment (CKA)
     
-    # Compute centering matrix
-    n = K.shape[0]
-    I = np.eye(n)
-    H = I - np.ones((n, n)) / n
-    
-    # Center the kernel matrix
-    K_centered = H @ K @ H
+#     K: NTK matrix (numpy array)
+#     y: labels (numpy array)
+#     """
 
-    # Center the one-hot encoded labels
-    y_centered = H @ y_onehot
+#     # One-hot encode the labels
+#     num_classes = len(np.unique(y))
+#     y_onehot = np.eye(num_classes)[y]
     
-    # Compute numerator of CKA
-    numerator = np.trace(y_centered.T @ K_centered @ y_centered)
+#     # Compute centering matrix
+#     n = K.shape[0]
+#     I = np.eye(n)
+#     H = I - np.ones((n, n)) / n
     
-    # Compute denominator of CKA
-    denominator = np.linalg.norm(K_centered, ord='fro') * np.linalg.norm(y_centered, ord='fro')
+#     # Center the kernel matrix
+#     K_centered = H @ K @ H
+
+#     # Center the one-hot encoded labels
+#     y_centered = H @ y_onehot
     
-    # Compute CKA
-    cka = numerator / denominator
+#     # Compute numerator of CKA
+#     numerator = np.trace(y_centered.T @ K_centered @ y_centered)
     
-    return cka
+#     # Compute denominator of CKA
+#     denominator = np.linalg.norm(K_centered, ord='fro') * np.linalg.norm(y_centered, ord='fro')
+    
+#     # Compute CKA
+#     cka = numerator / denominator
+    
+#     return cka
