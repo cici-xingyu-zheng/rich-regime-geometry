@@ -55,24 +55,36 @@ data/Geometry/new/activations
 -  `output_scale = 0.1` hasn't been been fed into the pipeline for capacity measure; will do that soon as local or cluster finish; should be local
 - create the wrong folder; now capacity measure results is in `~/output/capacity_measures` and will move them over 
 - for outputs now let's start using output relative to the script's dir, so that it's not dependent on where we run things.
-- Jacobian running and should be done very quickly
+- Jacobian running and should be done very quickly [done]
+- Kernel distance matricies added -- which we we can use implace of the SVD spectrum
+- Implemented CKA -- need proofread and everything 
+    -- but does not look too related to our statement about grokking
 
+### 09/13/24
+One question that I have is are there some pattern in the performances before and after grok? Does the network do certain classification well and suck at others? Can we check that?
+
+- first will clean up
+- moved MNIST code here and finish the kernel measures
+- prep for meetings
 
 **TO-DO:**
 1. move over other measures: 
-    1. input and weight jacobian svds, kernel distance
     2. out of distribution generalization 
-2. implement CKA
-3. need to remove some activation as well; locally they take up 50+ G... but also need to figure out how much capacity measurement we need to re-run
+2. do some plotting 
 4. move the MNIST example here, make the format conform
 5. code to reproduce the example networks 
 6. weight norm over checkpoints (maybe)
 
 
 
+## Figure planning
+
+Fig. 3. use the updated n= 1000 example or n= 2000 with weight decay
+FIg. 4. output scaling 0.5, 0.001
+
 
 ## Appendix planning
 
-1. all 3 types, 3 examples each
-2. variability 
-3. training example capacity and test example capacity 
+1. all 3 types, 3 examples each for transition from no-grok to grok
+2. variability -- recipy is not clean
+3. training set capacity and test set capacity -- follows well
