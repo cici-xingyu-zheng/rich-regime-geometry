@@ -5,7 +5,7 @@ import time
 import os
 from pathlib import Path
 import math
-
+import pickle as pkl
 import numpy as np
 from tqdm.auto import tqdm
 
@@ -183,7 +183,7 @@ for alpha in alphas:
                     results[alpha]['train_accuracies'][-1] * 100,
                     results[alpha]['test_accuracies'][-1] * 100))
                 
-            if steps in [1, 10, 100, 1000, 10000, 20000, 30000, 40000, 60000, 70000, 80000, 90000, 100000]:
+            if steps in [1, 10, 100, 500, 1000, 5000, 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000]:
                 print(f"steps: {steps}; save model")
                 save_path = os.path.join('/data/cici/Geometry/new/MNIST/checkpoints', f'alpha_{alpha}_{steps}.pth')
                 torch.save(mlp.state_dict(), save_path)
@@ -198,4 +198,10 @@ for alpha in alphas:
             optimizer.step()
             steps += 1
             pbar.update(1)
-    
+
+
+filename = os.path.join('/data/cici/Geometry/new/MNIST/checkpoints', f'acc_loss_log.pkl')
+with open(filename, 'wb') as file:
+    pkl.dump(results, file)
+
+print(f"Results saved as {filename}")
