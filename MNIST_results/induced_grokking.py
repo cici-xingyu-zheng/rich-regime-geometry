@@ -37,7 +37,7 @@ train_points = 1000
 optimization_steps = 100001
 batch_size = 200
 loss_function = 'MSE'   # 'MSE' or 'CrossEntropy'
-optimizer = 'AdamW'     # 'AdamW' or 'Adam' or 'SGD'
+optimizer_choice = 'AdamW'     # 'AdamW' or 'Adam' or 'SGD'
 lr = 1e-3
 initialization_scale = 8.0
 download_directory = "../data"
@@ -147,8 +147,8 @@ for alpha in alphas:
             p.data = initialization_scale * p.data
 
     # create optimizer
-    assert optimizer in optimizer_dict, f"Unsupported optimizer choice: {optimizer}"
-    optimizer = optimizer_dict[optimizer](mlp.parameters(), lr=lr, weight_decay=weight_decay)
+    assert optimizer_choice in optimizer_dict, f"Unsupported optimizer choice: {optimizer_choice}"
+    optimizer = optimizer_dict[optimizer_choice](mlp.parameters(), lr=lr, weight_decay=weight_decay)
 
     # define loss function
     assert loss_function in loss_function_dict

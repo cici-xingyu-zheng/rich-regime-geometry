@@ -33,7 +33,7 @@ def weight_jacobian_svd(model, inputs, normalized = False):
         for i in range(output_dim):
             model.zero_grad()
             output[:, i].backward(torch.ones_like(output[:, i]), retain_graph=True) # contain the sum of gradients for all samples in the batch
-            # For each parameter tensor p, p.grad retrieves the gradient of that parameter
+            # for each parameter tensor p, p.grad retrieves the gradient of that parameter
             jacobian_i = torch.cat([p.grad.view(-1) for p in model.parameters()])
             jacobian[:, i] = jacobian_i
         
@@ -56,75 +56,68 @@ def weight_signular_average(model, test_dataloader, normalized = False):
     model.eval()
     S_sum = None
     S_count = 0
-    # Iterate over batches
+    # iterate over batches
     for _, (inputs, _) in enumerate(test_dataloader):
 
-        # Move the input data to the same device as the model
+        # move the input data to the same device as the model
         inputs = inputs.to(next(model.parameters()).device)
     
         S = weight_jacobian_svd(model, inputs, normalized = normalized)
 
-        # Accumulate the sum of batch-wise Jacobian averages
+        # accumulate the sum of batch-wise Jacobian averages
         if S_sum is None:
             S_sum = S
         else:
             S_sum += S
         
-        # Increment the count of batches
         S_count += 1
 
-    # Compute the overall average Jacobian matrix
+    # compute the overall average Jacobian matrix
     S_average = S_sum / S_count
 
     return S_average.cpu().numpy()
 
 
 def input_jacobian_average(model, data_loader, dim = (47, 784)):
-    # Set the model to evaluation mode
     model.eval()
     
-    # Initialize variables to store the sum and count of Jacobian matrices
     jacobian_sum = None
     jacobian_count = 0
     
-    # Iterate over batches
+    # iterate over batches
     for _, (inputs, _) in enumerate(data_loader):
         # Move the input data to the same device as the model
         inputs = inputs.to(next(model.parameters()).device)
 
-        # Initialize variables to store the sum and count of Jacobian matrices within the batch
         batch_jacobian_sum = None
         batch_jacobian_count = 0
         
-        # Iterate over each data point in the batch
         for data_point in inputs:
             jacobian = torch.autograd.functional.jacobian(model, data_point, create_graph=False, strict=False)
 
-            # Reshape the Jacobian matrix to (output_dim, input_dim)
+            # reshape the Jacobian matrix to (output_dim, input_dim)
             jacobian = jacobian.view(dim[0], dim[1])  # Output dim: 47, Input dim: 784 (flattened 28x28)
 
-            # Accumulate the sum of Jacobian matrices within the batch
+            # accumulate the sum within the batch
             if batch_jacobian_sum is None:
                 batch_jacobian_sum = jacobian
             else:
                 batch_jacobian_sum += jacobian
             
-            # Increment the count of Jacobian matrices within the batch
             batch_jacobian_count += 1
         
-        # Compute the average Jacobian matrix within the batch
+        # compute the average Jacobian matrix within the batch
         batch_jacobian_average = batch_jacobian_sum / batch_jacobian_count
         
-        # Accumulate the sum of batch-wise Jacobian averages
+        # accumulate the sum of batch-wise averages
         if jacobian_sum is None:
             jacobian_sum = batch_jacobian_average
         else:
             jacobian_sum += batch_jacobian_average
         
-        # Increment the count of batches
         jacobian_count += 1
     
-    # Compute the overall average Jacobian matrix
+    # the overall average Jacobian matrix
     jacobian_average = jacobian_sum / jacobian_count
     
     return jacobian_average
@@ -143,7 +136,9 @@ def input_signular_average(jacobian_average, normalized = False):
 
 
 def plot_spectrum(S0, Ss, S0_normalized, Ss_normalized, epochs, output_dir, wrt = 'weight'):
-    # Plot the singular value spectra
+    '''
+    Plot the singular value spectra
+    '''
     cmap = plt.get_cmap('plasma')
     norm = plt.Normalize(np.log10(min(epochs)), np.log10(max(epochs)))
     colors = [cmap(norm(np.log10(epoch))) for epoch in epochs]
@@ -175,17 +170,78 @@ def plot_spectrum(S0, Ss, S0_normalized, Ss_normalized, epochs, output_dir, wrt 
 
 
 def compute_ntk_at_epoch(model, dataloader, device):
-    # Set requires_grad to True for all model parameters
+    '''
+    Compute averaged NTK across batches.
+    '''
     for param in model.parameters():
         param.requires_grad = True
     
     ntk_sum = None
     num_batches = 0
-    
+
+    # Concstruct the batch wise Jacobian matrix
     for inputs, _ in dataloader:
         inputs = inputs.to(device)
         
-        # Compute the Jacobian matrix
+        model.zero_grad()
+        outputs = model(inputs)
+        jacobian = []
+        
+        for output in outputs:
+            grad_output = torch.zeros_like(output)
+            grad_output[:] = 1.0
+            gradients = torch.autograd.grad(output, model.parameters(), grad_outputs=grad_output, create_graph=True)
+            # flattening to be a row for the output
+            jacobian.append(torch.cat([g.view(-1) for g in gradients]))
+        
+        # stack rows:
+        jacobian = torch.stack(jacobian)
+        
+        # K(X, X'):
+        ntk_batch = torch.matmul(jacobian, jacobian.t())
+        
+        # accumulate the NTK sum
+        if ntk_sum is None:
+            ntk_sum = ntk_batch.cpu().detach()
+        else:
+            ntk_sum += ntk_batch.cpu().detach()
+        
+        num_batches += 1
+    
+    # the average NTK over all batches
+    ntk_avg = ntk_sum / num_batches
+    
+    return ntk_avg.numpy()
+
+def kernel_distance(Kt1, Kt2):
+    '''
+    Compute the kernel distance between NTKs at different training times.
+    '''
+    # Frobenius inner:
+    frobenius_inner_product = np.sum(Kt1 * Kt2)
+    
+    # Frobenius norms
+    frobenius_norm_Kt1 = np.sqrt(np.sum(Kt1**2))
+    frobenius_norm_Kt2 = np.sqrt(np.sum(Kt2**2))
+    
+    # the kernel distance
+    kernel_dist = 1 - frobenius_inner_product / (frobenius_norm_Kt1 * frobenius_norm_Kt2)
+    
+    return kernel_dist
+
+def compute_ntk_full_at_epoch(model, dataloader, device):
+    '''
+    Compute NTK for full dataset loaded.
+    '''
+    for param in model.parameters():
+        param.requires_grad = True
+    
+    all_jacobians = []
+    all_labels = []
+    
+    for inputs, labels in dataloader:
+        inputs = inputs.to(device)
+        
         model.zero_grad()
         outputs = model(inputs)
         jacobian = []
@@ -196,123 +252,56 @@ def compute_ntk_at_epoch(model, dataloader, device):
             gradients = torch.autograd.grad(output, model.parameters(), grad_outputs=grad_output, create_graph=True)
             jacobian.append(torch.cat([g.view(-1) for g in gradients]))
         
+        # stack Jacobians for this batch
         jacobian = torch.stack(jacobian)
         
-        # Compute the NTK for the current batch
-        ntk_batch = torch.matmul(jacobian, jacobian.t())
-        
-        # Accumulate the NTK sum
-        if ntk_sum is None:
-            ntk_sum = ntk_batch.cpu().detach()
-        else:
-            ntk_sum += ntk_batch.cpu().detach()
-        
-        num_batches += 1
+        # stack across batch
+        all_jacobians.append(jacobian)
+        all_labels.append(labels)
     
-    # Compute the average NTK over all batches
-    ntk_avg = ntk_sum / num_batches
+    # concatenate Jacobians and labels from all batches
+    full_jacobian = torch.cat(all_jacobians, dim=0)
+    full_labels = torch.cat(all_labels, dim=0)
     
-    return ntk_avg.numpy()
+    # compute the NTK:
+    ntk = torch.mm(full_jacobian, full_jacobian.t())
+    
+    # return NTK and labels as NumPy arrays 
+    return ntk.cpu().detach().numpy(), full_labels.cpu().numpy()
 
-def kernel_distance(Kt1, Kt2):
+
+def compute_cka(K, y):
+    
     """
-    Compute the kernel distance between two Neural Tangent Kernels.
-    
-    Args:
-        Kt1: NTK matrix at time t1
-        Kt2: NTK matrix at time t2
-    
-    Returns:
-        The kernel distance between Kt1 and Kt2
+    Compute Centered Kernel Alignment (CKA), between NTK features and the given task y(X):
+    CKA =  (y^T K_t y) / (||K_t||_F ||y||^2)
+
+    Centering K and y by the centering matrix: https://en.wikipedia.org/wiki/Centering_matrix
+    Alternatively can just subtract the mean.
     """
-    # Compute the Frobenius inner product
-    frobenius_inner_product = np.sum(Kt1 * Kt2)
-    
-    # Compute the Frobenius norms
-    frobenius_norm_Kt1 = np.sqrt(np.sum(Kt1**2))
-    frobenius_norm_Kt2 = np.sqrt(np.sum(Kt2**2))
-    
-    # Compute the kernel distance
-    kernel_dist = 1 - frobenius_inner_product / (frobenius_norm_Kt1 * frobenius_norm_Kt2)
-    
-    return kernel_dist
 
-# def compute_ntk_full_at_epoch(model, dataloader, device):
-#     # Enable gradient computation for all model parameters
-#     for param in model.parameters():
-#         param.requires_grad = True
+    # One-hot encode the labels
+    num_classes = len(np.unique(y))
+    y_onehot = np.eye(num_classes)[y]
     
-#     all_jacobians = []
-#     all_labels = []
+    # Compute centering matrix
+    n = K.shape[0]
+    I = np.eye(n)
+    H = I - np.ones((n, n)) / n 
     
-#     for inputs, labels in dataloader:
-#         # Move inputs to the specified device (e.g., GPU)
-#         inputs = inputs.to(device)
-        
-#         # Reset gradients to zero before computing new ones
-#         model.zero_grad()
-#         # Forward pass through the model
-#         outputs = model(inputs)
-#         jacobian = []
-        
-#         # Compute Jacobian for each output
-#         for output in outputs:
-#             # Create a gradient output tensor filled with ones
-#             grad_output = torch.zeros_like(output)
-#             grad_output[:] = 1.0
-#             # Compute gradients w.r.t. model parameters
-#             gradients = torch.autograd.grad(output, model.parameters(), grad_outputs=grad_output, create_graph=True)
-#             # Flatten and concatenate gradients into a single vector
-#             jacobian.append(torch.cat([g.view(-1) for g in gradients]))
-        
-#         # Stack Jacobians for all outputs in this batch
-#         jacobian = torch.stack(jacobian)
-        
-#         all_jacobians.append(jacobian)
-#         all_labels.append(labels)
-    
-#     # Concatenate Jacobians and labels from all batches
-#     full_jacobian = torch.cat(all_jacobians, dim=0)
-#     full_labels = torch.cat(all_labels, dim=0)
-    
-#     # Compute the NTK by matrix multiplication of Jacobian with its transpose
-#     ntk = torch.mm(full_jacobian, full_jacobian.t())
-    
-#     # Return NTK and labels as NumPy arrays on CPU
-#     return ntk.cpu().detach().numpy(), full_labels.cpu().numpy()
+    # Center the kernel matrix
+    K_centered = H @ K @ H
 
-
-# def compute_cka(K, y):
+    # Center the one-hot encoded labels
+    y_centered = H @ y_onehot
     
-#     """
-#     Compute Centered Kernel Alignment (CKA)
+    # Compute numerator of CKA
+    numerator = np.trace(y_centered.T @ K_centered @ y_centered)
     
-#     K: NTK matrix (numpy array)
-#     y: labels (numpy array)
-#     """
-
-#     # One-hot encode the labels
-#     num_classes = len(np.unique(y))
-#     y_onehot = np.eye(num_classes)[y]
+    # Compute denominator of CKA
+    denominator = np.linalg.norm(K_centered, ord='fro') * np.linalg.norm(y_centered, ord='fro')
     
-#     # Compute centering matrix
-#     n = K.shape[0]
-#     I = np.eye(n)
-#     H = I - np.ones((n, n)) / n
+    # Compute CKA
+    cka = numerator / denominator
     
-#     # Center the kernel matrix
-#     K_centered = H @ K @ H
-
-#     # Center the one-hot encoded labels
-#     y_centered = H @ y_onehot
-    
-#     # Compute numerator of CKA
-#     numerator = np.trace(y_centered.T @ K_centered @ y_centered)
-    
-#     # Compute denominator of CKA
-#     denominator = np.linalg.norm(K_centered, ord='fro') * np.linalg.norm(y_centered, ord='fro')
-    
-#     # Compute CKA
-#     cka = numerator / denominator
-    
-#     return cka
+    return cka

@@ -44,12 +44,13 @@ dirs =  [d for d in os.listdir(grand_parent_dir)]
 
 output_parent_dir = '../output/capacity_measures'
 
-for parent_dir in parent_dirs[:4]:
+for parent_dir in parent_dirs:
     print(parent_dir)
 
-for i, parent_dir in enumerate(parent_dirs[:4]): # Run the rest locally ...
+for i, parent_dir in enumerate(parent_dirs): # Run the rest locally ...
+    print('Running activation in:', parent_dir)
 
-    print('Running activation in:', dirs[i])
+    print('Output in:', dirs[i])
     print()
 
     for subfolder in sorted(os.listdir(parent_dir)):

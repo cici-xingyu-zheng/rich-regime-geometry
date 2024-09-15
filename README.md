@@ -61,16 +61,14 @@ data/Geometry/new/activations
     -- but does not look too related to our statement about grokking
 
 ### 09/13/24
-One question that I have is are there some pattern in the performances before and after grok? Does the network do certain classification well and suck at others? Can we check that?
-
-- first will clean up
+- One question that I have is are there some pattern in the performances before and after grok? Does the network do certain classification well and suck at others? Can we check that? -- plotted confusion matrix and the log(logits) 
 - moved MNIST code here and finish the kernel measures
-- prep for meetings
 
 **TO-DO:**
 1. move over other measures: 
     2. out of distribution generalization 
 2. do some plotting 
+3. different empirical NTK comparison
 4. move the MNIST example here, make the format conform
 5. code to reproduce the example networks 
 6. weight norm over checkpoints (maybe)
@@ -82,6 +80,7 @@ One question that I have is are there some pattern in the performances before an
 Fig. 3. use the updated n= 1000 example or n= 2000 with weight decay
 FIg. 4. output scaling 0.5, 0.001
 
+Use the Kernel Distance measurement instead.
 
 ## Appendix planning
 
