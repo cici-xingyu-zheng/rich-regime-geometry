@@ -44,15 +44,21 @@ dirs =  [d for d in os.listdir(grand_parent_dir)]
 
 output_parent_dir = '../output/capacity_measures'
 
-parent_dir = parent_dirs[-4]
-dir = dirs[-4]
-print('Running activation in:', parent_dir)
+for parent_dir in parent_dirs:
+    print(parent_dir)
+print()
 
+
+parent_dir = parent_dirs[3]
+dir = dirs[3]
+print('Running activation in:', parent_dir)
 print('Output in:', dir)
 print()
 
-for subfolder in sorted(os.listdir(parent_dir)):
+# for subfolder in sorted(os.listdir(parent_dir)):
+for subfolder in ['epoch20000', 'epoch30000', 'epoch40000', 'epoch50000']:
     subfolder_path = os.path.join(parent_dir, subfolder)
+    print(subfolder)
     # Check if the current item is a directory
     if os.path.isdir(subfolder_path):
         print("folder's", subfolder_path, '\n')

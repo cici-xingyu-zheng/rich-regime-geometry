@@ -17,8 +17,8 @@ import pickle as pkl
 
 
 num_classes = 47
-batch_size = 128
-
+batch_size = 16
+subsample_size = 960
 # device and seed
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f'device: {device}')
@@ -53,17 +53,20 @@ transform = transforms.Compose([
     transforms.Normalize((0.1307,), (0.3081,))])
 
 test_dataset = torchvision.datasets.EMNIST(root='./data', split='balanced', train=False, download=False, transform=transform)
-
-subset_indices = np.random.choice(len(test_dataset), 1280, replace=False) 
+subset_indices = np.random.choice(len(test_dataset), subsample_size, replace=False) 
 test_subset = torch.utils.data.Subset(test_dataset, subset_indices)
 test_dataloader = DataLoader(test_subset, batch_size=batch_size, shuffle=False)
+
+train_dataset = torchvision.datasets.EMNIST(root='./data', split='balanced', train=True, download=False, transform=transform)
+train_subset = torch.utils.data.Subset(train_dataset, range(subsample_size)) # subsample_size should be < 1000 to apply for all networks.
+train_dataloader = DataLoader(train_subset, batch_size= batch_size, shuffle=False)
+
 
 # the directory containing the script
 script_dir = os.path.dirname(os.path.abspath(__file__))
 # paths relative to the script's location
 output_parent_dir = os.path.join(script_dir, "..", "output/kernel_distance")
 
-# main:
 
 def compute_pairwise_distances(models, dataloader):
     n = len(models)
@@ -89,15 +92,13 @@ def plot_heatmap(distance_matrix, param_list, save_path):
     plt.savefig(save_path)
     plt.close()
 
-
+# main:
 for param_list in param_lists:
     print()
     print('inspecting', param_list, '\n')
     param_combo = dict(zip(param_names, param_list))
 
     MLPmodels, output_dir = tools.get_models(param_combo, checkpoint_parent_dir, output_parent_dir, epochs, device)
-
-    param_combo = dict(zip(param_names, param_list))
 
     output_scale = param_combo['output_scale']
     weight_scale = param_combo['weight_scale']
@@ -110,15 +111,23 @@ for param_list in param_lists:
             param.data *= weight_scale
 
     MLPmodels = [model0] + MLPmodels
+
+    # for test set:
     distance_matrix = compute_pairwise_distances(MLPmodels, test_dataloader)
-    figname = os.path.join(output_dir, 'kernel_dist.pdf')
-
+    figname = os.path.join(output_dir, 'kernel_dist_test-set.pdf')
     plot_heatmap(distance_matrix, param_list, figname)
-
-    filename = os.path.join(output_dir, f'K-dist.npy')
+    filename = os.path.join(output_dir, f'K-dist_test.npy')
     np.save(filename, distance_matrix)
-
     print(f"Data saved as {filename}")
+
+    # for train set:
+    distance_matrix = compute_pairwise_distances(MLPmodels, train_dataloader)
+    figname = os.path.join(output_dir, 'kernel_dist_train-set.pdf')
+    plot_heatmap(distance_matrix, param_list, figname)
+    filename = os.path.join(output_dir, f'K-dist_train.npy')
+    np.save(filename, distance_matrix)
+    print(f"Data saved as {filename}")
+
 
   
 
