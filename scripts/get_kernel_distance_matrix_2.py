@@ -19,7 +19,8 @@ import pickle as pkl
 num_classes = 47
 batch_size = 16
 subsample_size = 256
-gpu_id = 0
+# device and seed
+gpu_id = 1
 device = torch.device(f'cuda:{gpu_id}' if torch.cuda.is_available() else 'cpu')
 print(f'device: {device}')
 
@@ -36,11 +37,11 @@ param_lists = [
                 # [ 'AdamW', 1, 2000, 1, 0.001],
                 # [ 'AdamW', 5, 2000, 1, 0.001],
                 # [ 'AdamW', 10, 2000, 1, 0.001],
-                # [ 'AdamW', 10, 1000, 1, 0.001],
+                [ 'AdamW', 10, 1000, 1, 0.001],
                 # [ 'AdamW', 10, 5000, 1, 0.001],
-                # [ 'AdamW', 10, 2000, .5, 0],
+                [ 'AdamW', 10, 2000, .5, 0],
                 # [ 'AdamW', 10, 2000, .1, 0],
-                [ 'AdamW', 10, 2000, .001, 0],
+                # [ 'AdamW', 10, 2000, .001, 0],
             ]
 
 checkpoint_parent_dir = '/data/cici/Geometry/new/checkpoints'

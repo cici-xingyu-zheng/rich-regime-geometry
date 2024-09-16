@@ -77,7 +77,6 @@ def weight_signular_average(model, test_dataloader, normalized = False):
 
     return S_average.cpu().numpy()
 
-
 def input_jacobian_average(model, data_loader, dim = (47, 784)):
     model.eval()
     
@@ -122,8 +121,6 @@ def input_jacobian_average(model, data_loader, dim = (47, 784)):
     
     return jacobian_average
 
-
-
 def input_signular_average(jacobian_average, normalized = False):
 
     if normalized: 
@@ -133,7 +130,6 @@ def input_signular_average(jacobian_average, normalized = False):
     _, S, _ = torch.linalg.svd(jacobian_average)
 
     return S.cpu().numpy()
-
 
 def plot_spectrum(S0, Ss, S0_normalized, Ss_normalized, epochs, output_dir, wrt = 'weight'):
     '''
@@ -166,109 +162,6 @@ def plot_spectrum(S0, Ss, S0_normalized, Ss_normalized, epochs, output_dir, wrt 
     filename = os.path.join(output_dir, f'J-{wrt}.pdf')
     fig.savefig(filename,  bbox_inches='tight')
     plt.close(fig)  
-
-
-
-def compute_ntk_at_epoch(model, dataloader, device):
-    '''
-    Compute averaged NTK across batches.
-    '''
-    for param in model.parameters():
-        param.requires_grad = True
-    
-    ntk_sum = None
-    num_batches = 0
-
-    # Concstruct the batch wise Jacobian matrix
-    for inputs, _ in dataloader:
-        inputs = inputs.to(device)
-        
-        model.zero_grad()
-        outputs = model(inputs)
-        jacobian = []
-        
-        for output in outputs:
-            grad_output = torch.zeros_like(output)
-            grad_output[:] = 1.0
-            gradients = torch.autograd.grad(output, model.parameters(), grad_outputs=grad_output, create_graph=True)
-            # flattening to be a row for the output
-            jacobian.append(torch.cat([g.view(-1) for g in gradients]))
-        
-        # stack rows:
-        jacobian = torch.stack(jacobian)
-        
-        # K(X, X'):
-        ntk_batch = torch.matmul(jacobian, jacobian.t())
-        
-        # accumulate the NTK sum
-        if ntk_sum is None:
-            ntk_sum = ntk_batch.cpu().detach()
-        else:
-            ntk_sum += ntk_batch.cpu().detach()
-        
-        num_batches += 1
-    
-    # the average NTK over all batches
-    ntk_avg = ntk_sum / num_batches
-    
-    return ntk_avg.numpy()
-
-def kernel_distance(Kt1, Kt2):
-    '''
-    Compute the kernel distance between NTKs at different training times.
-    '''
-    # Frobenius inner:
-    frobenius_inner_product = np.sum(Kt1 * Kt2)
-    
-    # Frobenius norms
-    frobenius_norm_Kt1 = np.sqrt(np.sum(Kt1**2))
-    frobenius_norm_Kt2 = np.sqrt(np.sum(Kt2**2))
-    
-    # the kernel distance
-    kernel_dist = 1 - frobenius_inner_product / (frobenius_norm_Kt1 * frobenius_norm_Kt2)
-    
-    return kernel_dist
-
-def compute_ntk_full_at_epoch(model, dataloader, device):
-    '''
-    Compute NTK for full dataset loaded.
-    '''
-    for param in model.parameters():
-        param.requires_grad = True
-    
-    all_jacobians = []
-    all_labels = []
-    
-    for inputs, labels in dataloader:
-        inputs = inputs.to(device)
-        
-        model.zero_grad()
-        outputs = model(inputs)
-        jacobian = []
-        
-        for output in outputs:
-            grad_output = torch.zeros_like(output)
-            grad_output[:] = 1.0
-            gradients = torch.autograd.grad(output, model.parameters(), grad_outputs=grad_output, create_graph=True)
-            jacobian.append(torch.cat([g.view(-1) for g in gradients]))
-        
-        # stack Jacobians for this batch
-        jacobian = torch.stack(jacobian)
-        
-        # stack across batch
-        all_jacobians.append(jacobian)
-        all_labels.append(labels)
-    
-    # concatenate Jacobians and labels from all batches
-    full_jacobian = torch.cat(all_jacobians, dim=0)
-    full_labels = torch.cat(all_labels, dim=0)
-    
-    # compute the NTK:
-    ntk = torch.mm(full_jacobian, full_jacobian.t())
-    
-    # return NTK and labels as NumPy arrays 
-    return ntk.cpu().detach().numpy(), full_labels.cpu().numpy()
-
 
 def compute_cka(K, y):
     
@@ -305,3 +198,90 @@ def compute_cka(K, y):
     cka = numerator / denominator
     
     return cka
+
+
+def kernel_distance(Kt1, Kt2):
+    """
+    Compute the kernel distance between two Neural Tangent Kernels (PyTorch tensor).
+    """
+    # make sure inputs are on the same device
+    if Kt1.device != Kt2.device:
+        Kt2 = Kt2.to(Kt1.device)
+
+    frobenius_inner_product = torch.sum(Kt1 * Kt2) # K symmetric
+    
+    frobenius_norm_Kt1 = torch.sqrt(torch.sum(Kt1**2))
+    frobenius_norm_Kt2 = torch.sqrt(torch.sum(Kt2**2))
+    
+    kernel_dist = 1 - frobenius_inner_product / (frobenius_norm_Kt1 * frobenius_norm_Kt2)
+    
+    return kernel_dist
+
+def compute_ntk(model, dataloader, device):
+    '''
+    Compute the Neural Tangent Kernel (NTK) for the given model and dataset.
+    Most computations are performed on CPU to reduce GPU memory usage.
+    '''
+    model.eval()  
+    for param in model.parameters():
+        param.requires_grad = True
+
+    all_jacobians = []
+
+    for batch_idx, batch in enumerate(dataloader):
+        # print(f"Processing batch {batch_idx + 1}")
+        
+        # handle different input types
+        if isinstance(batch, list):
+            inputs = batch[0]  
+        elif isinstance(batch, tuple): # this is not needed; only in test examples
+            inputs = batch[0]
+        else:
+            inputs = batch
+        
+        # convert to tensor 
+        if not isinstance(inputs, torch.Tensor):
+            inputs = torch.tensor(inputs, dtype=torch.float32)
+        
+        inputs = inputs.to(device)
+        # print(f"Batch {batch_idx + 1}: Input shape = {inputs.shape}")
+        
+        model.zero_grad()
+        outputs = model(inputs) # [batch_size, output_size]
+        # print(f"Batch {batch_idx + 1}: Output shape = {outputs.shape}")
+        
+        # move outputs to CPU for further processing... probably cost us computational time
+        outputs = outputs.cpu() 
+        
+        batch_jacobians = []
+        for output in outputs:
+            jacobian_rows = []
+            # get gradient for each fi: 
+            for out_idx in range(output.size(0)):
+                grad_output = torch.zeros_like(output) # [output_size]
+                grad_output[out_idx] = 1.0
+                gradients = torch.autograd.grad(output.to(device), model.parameters(), grad_outputs=grad_output.to(device), retain_graph=True)
+                jacobian_row = torch.cat([g.cpu().flatten() for g in gradients]) #  [num_params]
+                jacobian_rows.append(jacobian_row)
+            jacobian = torch.stack(jacobian_rows) # [output_size, num_params]
+            batch_jacobians.append(jacobian)
+        
+        batch_jacobian = torch.cat(batch_jacobians, dim=0) # [batch_size * output_size, num_params]
+        all_jacobians.append(batch_jacobian)
+        
+        # print(f"Batch {batch_idx + 1}: Processed {batch_jacobian.shape[0]} inputs, Jacobian shape = {batch_jacobian.shape}")
+        
+        # free up memory
+        del batch_jacobians, jacobian_rows, gradients, grad_output, outputs
+        torch.cuda.empty_cache()  # If using GPU, just in case
+
+    # concatenate all Jacobians on CPU 
+    full_jacobian = torch.cat(all_jacobians, dim=0) # [load_size * output_size, num_params]
+    print(f"Full Jacobian shape: {full_jacobian.shape}")
+
+    # compute the NTK on CPU
+    ntk = torch.mm(full_jacobian, full_jacobian.t())
+    print(f"NTK shape: {ntk.shape}")
+
+    print("NTK computation completed.")
+    return ntk
