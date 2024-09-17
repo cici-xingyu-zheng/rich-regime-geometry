@@ -199,7 +199,6 @@ def compute_cka(K, y):
     
     return cka
 
-
 def kernel_distance(Kt1, Kt2):
     """
     Compute the kernel distance between two Neural Tangent Kernels (PyTorch tensor).
@@ -208,7 +207,7 @@ def kernel_distance(Kt1, Kt2):
     if Kt1.device != Kt2.device:
         Kt2 = Kt2.to(Kt1.device)
 
-    frobenius_inner_product = torch.sum(Kt1 * Kt2) # K symmetric
+    frobenius_inner_product = torch.sum(Kt1 * Kt2) # Kt symmetric
     
     frobenius_norm_Kt1 = torch.sqrt(torch.sum(Kt1**2))
     frobenius_norm_Kt2 = torch.sqrt(torch.sum(Kt2**2))
@@ -231,11 +230,8 @@ def compute_ntk(model, dataloader, device):
     for batch_idx, batch in enumerate(dataloader):
         # print(f"Processing batch {batch_idx + 1}")
         
-        # handle different input types
         if isinstance(batch, list):
             inputs = batch[0]  
-        elif isinstance(batch, tuple): # this is not needed; only in test examples
-            inputs = batch[0]
         else:
             inputs = batch
         
@@ -250,7 +246,7 @@ def compute_ntk(model, dataloader, device):
         outputs = model(inputs) # [batch_size, output_size]
         # print(f"Batch {batch_idx + 1}: Output shape = {outputs.shape}")
         
-        # move outputs to CPU for further processing... probably cost us computational time
+        # move outputs to CPU for further processing... probably cost us computational time; but safer to run
         outputs = outputs.cpu() 
         
         batch_jacobians = []
