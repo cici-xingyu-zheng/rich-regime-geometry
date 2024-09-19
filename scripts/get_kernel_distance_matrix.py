@@ -18,7 +18,7 @@ import pickle as pkl
 
 num_classes = 47
 batch_size = 16
-subsample_size = 256
+subsample_size = 256 
 gpu_id = 0
 device = torch.device(f'cuda:{gpu_id}' if torch.cuda.is_available() else 'cpu')
 print(f'device: {device}')
@@ -33,13 +33,13 @@ np.random.seed(seed)
 param_names = ['optimizer', 'weight_scale', 'train_size', 'output_scale', 'weight_decay']
 
 param_lists = [ 
-                # [ 'AdamW', 1, 2000, 1, 0.001],
-                # [ 'AdamW', 5, 2000, 1, 0.001],
-                # [ 'AdamW', 10, 2000, 1, 0.001],
-                # [ 'AdamW', 10, 1000, 1, 0.001],
-                # [ 'AdamW', 10, 5000, 1, 0.001],
-                # [ 'AdamW', 10, 2000, .5, 0],
-                # [ 'AdamW', 10, 2000, .1, 0],
+                [ 'AdamW', 1, 2000, 1, 0.001],
+                [ 'AdamW', 5, 2000, 1, 0.001],
+                [ 'AdamW', 10, 2000, 1, 0.001],
+                [ 'AdamW', 10, 1000, 1, 0.001],
+                [ 'AdamW', 10, 5000, 1, 0.001],
+                [ 'AdamW', 10, 2000, .5, 0],
+                [ 'AdamW', 10, 2000, .1, 0],
                 [ 'AdamW', 10, 2000, .001, 0],
             ]
 
@@ -116,13 +116,13 @@ for param_list in param_lists:
 
     MLPmodels = [model0] + MLPmodels
 
-    # # for test set:
-    # distance_matrix = compute_pairwise_distances(MLPmodels, test_dataloader)
-    # figname = os.path.join(output_dir, 'kernel_dist_test-set.pdf')
-    # plot_heatmap(distance_matrix, param_list, figname)
-    # filename = os.path.join(output_dir, f'K-dist_test.npy')
-    # np.save(filename, distance_matrix)
-    # print(f"Data saved as {filename}")
+    # for test set:
+    distance_matrix = compute_pairwise_distances(MLPmodels, test_dataloader)
+    figname = os.path.join(output_dir, 'kernel_dist_test-set.pdf')
+    plot_heatmap(distance_matrix, param_list, figname)
+    filename = os.path.join(output_dir, f'K-dist_test.npy')
+    np.save(filename, distance_matrix)
+    print(f"Data saved as {filename}")
 
     # for train set:
     distance_matrix = compute_pairwise_distances(MLPmodels, train_dataloader)

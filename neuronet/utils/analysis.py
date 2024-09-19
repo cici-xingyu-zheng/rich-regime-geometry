@@ -5,6 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+# didn't end up using those functions
+
 def weight_jacobian_svd(model, inputs, normalized = False):
     """
     Computes the SVD of the weight Jacobian for a given model and input batch.
@@ -199,6 +201,10 @@ def compute_cka(K, y):
     
     return cka
 
+
+
+
+# Main analysis functions:
 def kernel_distance(Kt1, Kt2):
     """
     Compute the kernel distance between two Neural Tangent Kernels (PyTorch tensor).
@@ -207,7 +213,7 @@ def kernel_distance(Kt1, Kt2):
     if Kt1.device != Kt2.device:
         Kt2 = Kt2.to(Kt1.device)
 
-    frobenius_inner_product = torch.sum(Kt1 * Kt2) # Kt symmetric
+    frobenius_inner_product = torch.sum(Kt1 * Kt2) # Kt is symmetric
     
     frobenius_norm_Kt1 = torch.sqrt(torch.sum(Kt1**2))
     frobenius_norm_Kt2 = torch.sqrt(torch.sum(Kt2**2))
