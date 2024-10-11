@@ -75,15 +75,20 @@ data/Geometry/new/activations
 
 
 
-## Figure planning
+### Figure planning
 
 Fig. 3. use the updated n= 1000 example or n= 2000 with weight decay
 FIg. 4. output scaling 0.5, 0.001
 
 Use the Kernel Distance measurement instead.
 
-## Appendix planning
+### Appendix planning
 
 1. all 3 types, 3 examples each for transition from no-grok to grok
 2. variability -- recipy is not clean
 3. training set capacity and test set capacity -- follows well
+
+
+### 10/11/24
+
+Will draft actionalbes here.
