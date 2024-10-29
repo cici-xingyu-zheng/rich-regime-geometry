@@ -15,6 +15,8 @@ import matplotlib.pyplot as plt
 
 from neuronet.utils import tools
 
+# need to check if get_model_activation() works, and if the flow looks okay.
+
 num_classes = 10
 
 def get_models(param_combo, checkpoint_parent_dir, output_parent_dir, epochs, device):
