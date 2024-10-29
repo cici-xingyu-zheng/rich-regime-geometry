@@ -55,7 +55,7 @@ seed = 0
 
 activation_fn = activation_dict[activation]
 
-def create_mlp(depth, width, activation, alpha=1.0):
+def create_mlp(depth, width, activation_fn, alpha=1.0):
     """Creates an MLP model with specified depth, width, activation, and output scaling."""
     layers = [nn.Flatten()]
     for i in range(depth):
