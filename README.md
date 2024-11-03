@@ -36,7 +36,14 @@ python scripts/example_model_train.py
 
 ## Citation
 ```bibtex
-[paper's citation]
+@inproceedings{
+zheng2024delays,
+title={Delays in generalization match delayed changes in representational geometry},
+author={Xingyu Zheng and Kyle Daruwalla and Ari S Benjamin and David Klindt},
+booktitle={UniReps: 2nd Edition of the Workshop on Unifying Representations in Neural Models},
+year={2024},
+url={https://openreview.net/forum?id=1ae108kHk2}
+}
 ```
 
 
