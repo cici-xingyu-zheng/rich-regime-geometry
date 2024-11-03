@@ -252,13 +252,14 @@ def compute_ntk(model, dataloader, device):
         outputs = model(inputs) # [batch_size, output_size]
         # print(f"Batch {batch_idx + 1}: Output shape = {outputs.shape}")
         
-        # move outputs to CPU for further processing... probably cost us computational time; but safer to run
+        # Move outputs to CPU for further processing... 
+        # probably cost us computational time; but safer to run
         outputs = outputs.cpu() 
         
         batch_jacobians = []
         for output in outputs:
             jacobian_rows = []
-            # get gradient for each fi: 
+            # Get gradient for each fi: 
             for out_idx in range(output.size(0)):
                 grad_output = torch.zeros_like(output) # [output_size]
                 grad_output[out_idx] = 1.0

@@ -15,21 +15,23 @@ import matplotlib.pyplot as plt
 
 from neuronet.utils import tools
 
-# need to check if get_model_activation() works, and if the flow looks okay.
 
 num_classes = 10
 
-def get_models(param_combo, checkpoint_parent_dir, output_parent_dir, epochs, device):
+def get_models(param_list, checkpoint_parent_dir, output_parent_dir, epochs, device):
 
-    subdir = '_'.join([f"{param_name}:{value}" for param_name, value in param_combo.items()])
-    checkpoint_dir = os.path.join(checkpoint_parent_dir, subdir)
+    subdir = '_'.join([param for param in param_list])
     output_dir = os.path.join(output_parent_dir, subdir)
     os.makedirs(output_dir, exist_ok=True)
     # Load trained networks:
     MLPmodels = []
     for epoch in epochs:
-        checkpoint = torch.load(f'{checkpoint_dir}/model_epoch_{epoch}.pth') ## check name
-        model = create_mlp(alpha = param_combo['alpha']).to(device)
+        checkpoint = torch.load(f'{checkpoint_parent_dir}/{param_list[0]}_{param_list[1]}_{epoch}.pth') ## check name
+        if param_list[0] == "scale":
+            model = create_mlp().to(device)
+        else:
+            # set output scaling
+            model = create_mlp(alpha = float(param_list[1]))
         model.load_state_dict(checkpoint)
         MLPmodels.append(model)
 
@@ -37,8 +39,8 @@ def get_models(param_combo, checkpoint_parent_dir, output_parent_dir, epochs, de
 
 
 def create_mlp(alpha=1.0):
-    # if it is weight scale, its already in the checkpoints!
-    """Creates an MLP model with specified depth, width, activation, and output scaling."""
+    """Creates an MLP model matching the trained model, to load checkpoints; 
+    specify output scaling."""
     width = 200
     depth = 3
     layers = [nn.Flatten()]
@@ -81,24 +83,21 @@ torch.cuda.manual_seed_all(seed)
 random.seed(seed)
 np.random.seed(seed)
 
-param_names = ['type', 'alpha', 'scale']
-
 param_lists = [ 
-                [ 'alpha', 0.001, 1],
-                [ 'alpha', 0.5, 1],
-                [ 'scale', 1, 2],
-                [ 'scale', 1, 8],
+                [ 'alpha', '0.001'],
+                [ 'alpha', '0.5'],
+                [ 'scale', '2'],
+                [ 'scale', '8'],
             ]
 
 # load dataset
 test_dataset = torchvision.datasets.MNIST(root=download_directory, train=False,
-    transform=torchvision.transforms.ToTensor(), download=False)
+    transform=torchvision.transforms.ToTensor(), download=True)
 subset_indices = np.random.choice(len(test_dataset), 2000, replace=False) # it's about 200 samples per class
 test_subset = torch.utils.data.Subset(test_dataset, subset_indices)
 test_dataloader = DataLoader(test_subset, batch_size=batch_size, shuffle=True)
 
 
 for param_list in param_lists:
-    param_combo = dict(zip(param_names, param_list))
-    MLPmodels, activation_dir = tools.get_models(param_combo, checkpoint_parent_dir, activation_parent_dir, epochs, device)
+    MLPmodels, activation_dir = get_models(param_list, checkpoint_parent_dir, activation_parent_dir, epochs, device)
     tools.get_model_activation(MLPmodels, activation_dir, test_dataloader, device, epochs)

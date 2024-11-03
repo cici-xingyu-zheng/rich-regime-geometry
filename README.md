@@ -91,4 +91,9 @@ Use the Kernel Distance measurement instead.
 
 ### 10/11/24
 
-Will draft actionalbes here.
+Will draft actionalbes [here](https://docs.google.com/document/d/1nZqnS2eZhhIALbfL1oMQmlXFDIwmToXLM4VYizSiW4I/edit?tab=t.0)
+
+### 10/29/24
+
+- get MNIST capacity result (it should finish end of today)
+- start going through the functions and cleanning up
