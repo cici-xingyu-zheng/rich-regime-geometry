@@ -6,7 +6,7 @@ This repository contains code for analyzing delayed generalization (grokking) in
 
 We implement recipes to induce grokking and includes scripts for:
 1. Training models that exhibit grokking
-2. Measuring manifold capacity of layer activations (cloned from Cohen et al., 2021)
+2. Measuring manifold capacity of layer activations (cloned repo from [Cohen et al., 2020](https://www.nature.com/articles/s41467-020-14578-5))
 3. Computing kernel distance metrics
 
 
@@ -15,16 +15,16 @@ We implement recipes to induce grokking and includes scripts for:
 Two conda environments are required:
 
 ```bash
-# For model training
+# For model training, and kernel distance analysis
 conda env create -f model_training_environment.yml
 
 # For capacity measurements
 conda env create -f manifold_environment_simple.yml
 ```
 
-### Training Models
+### Example training Models
 ```bash
-python scripts/example_model_train.py --data_path path/to/data --output_dir results/
+python scripts/example_model_train.py 
 ```
 
 
