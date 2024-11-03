@@ -1,3 +1,7 @@
+# Notes
+#   Scripts to run the capacity measurement code on the activations ordered by class.
+# CiCi Zheng, Sep, 2024
+
 import os
 import time
 import pandas as pd

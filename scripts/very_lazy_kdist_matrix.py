@@ -1,8 +1,3 @@
-# Notes:
-#   Script to get compute pairwise kernel distance between model checkpoints.
-#   Run from root directory.
-# CiCi Zheng, Sep, 2024
-
 from neuronet.utils import models, analysis, tools
 
 import torch
@@ -38,19 +33,14 @@ np.random.seed(seed)
 param_names = ['optimizer', 'weight_scale', 'train_size', 'output_scale', 'weight_decay']
 
 param_lists = [ 
-                [ 'AdamW', 1, 2000, 1, 0.001],
-                [ 'AdamW', 5, 2000, 1, 0.001],
-                [ 'AdamW', 10, 2000, 1, 0.001],
-                [ 'AdamW', 10, 1000, 1, 0.001],
-                [ 'AdamW', 10, 5000, 1, 0.001],
-                [ 'AdamW', 10, 2000, .5, 0],
-                [ 'AdamW', 10, 2000, .1, 0],
-                [ 'AdamW', 10, 2000, .001, 0],
-            ]
+     ['AdamW', 10, 2000, 1,  0.001],
+     ['AdamW', 10, 2000, 1,  0],
+     ['AdamW', 100, 2000, 1,  0],
+     ['AdamW', 500, 2000, 1,  0],
+]
 
 checkpoint_parent_dir = '/data/cici/Geometry/new/checkpoints'
-# epochs = [1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 100, 200, 300, 400, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 20000, 30000, 40000, 50000] 
-epochs = [1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 100, 200, 300, 400, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 5000, 6000, 7000, 8000, 9000, 10000] 
+epochs = [1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 100, 200, 300, 400, 500] 
 
 # standard transform for EMNIST
 transform = transforms.Compose([

@@ -1,3 +1,42 @@
+# Representational Geometry and Grokking in Image Classification
+
+This repository contains code for analyzing delayed generalization (grokking) in image classification tasks, focusing on the relationship between Neural Tangent Kernel (NTK) changes and representational geometry metrics.
+
+
+
+We implement recipes to induce grokking and includes scripts for:
+1. Training models that exhibit grokking
+2. Measuring manifold capacity of layer activations (cloned from Cohen et al., 2021)
+3. Computing kernel distance metrics
+
+
+### Setup
+
+Two conda environments are required:
+
+```bash
+# For model training
+conda env create -f model_training_environment.yml
+
+# For capacity measurements
+conda env create -f manifold_environment_simple.yml
+```
+
+### Training Models
+```bash
+python scripts/example_model_train.py --data_path path/to/data --output_dir results/
+```
+
+
+## Citation
+```bibtex
+[paper's citation]
+```
+
+
+
+---
+
 We will use README as log before we make it public.
 
 ## Summary of results so far:

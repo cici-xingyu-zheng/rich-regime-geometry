@@ -3,8 +3,11 @@ name: manifold
 channels:
   - defaults
 
-#  - appnope # macos specific
-#  - libzlib # the following 3 were installed seperately by conda-forge
+#  Not installed:
+#  - appnope # macos specific; no need if using linux
+
+#  The following 3 were installed seperately by conda-forge:
+#  - libzlib 
 #  - python_abi
 #  - libsqlite 
 #  - cvxopt

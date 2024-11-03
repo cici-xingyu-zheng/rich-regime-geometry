@@ -1,4 +1,5 @@
 /data/
 /plotting/
 /replicaMFT/activations/
-/utils/analysis_old_copy.py
+/neuronet/utils/analysis_old_copy.py
+/scripts/get_jacobians.py

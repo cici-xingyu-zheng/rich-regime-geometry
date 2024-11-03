@@ -32,22 +32,23 @@ torch.cuda.manual_seed_all(seed)
 random.seed(seed)
 np.random.seed(seed)
 
-num_epochs = 10000
+num_epochs = 100
 
 param_names = [ 'optimizer', 'weight_scale', 'train_size', 'output_scale','weight_decay']
-param_vals = ['Adam', 10, 1000, 1,  0.001]
-params = dict(zip(param_names, param_vals))
+param_lists = [
+     ['AdamW', 10, 2000, 1,  0.001],
+     ['AdamW', 10, 2000, 1,  0],
+     ['AdamW', 100, 2000, 1,  0],
+     ['AdamW', 500, 2000, 1,  0],
+]
 
 checkpoint_parent_dir = '/data/cici/Geometry/new/checkpoints'
-checkpoint_dir = os.path.join(checkpoint_parent_dir, '_'.join([f"{param_name}:{value}" for param_name, value in params.items()]))
-os.makedirs(checkpoint_dir, exist_ok=True)
-
 
 ### Main function:
 def main(params, num_epochs, checkpoint_dir):
 
     num_classes = 47
-    
+    print(params)
     train_size = params['train_size']
     optimizer_name = params['optimizer']
     output_scale = params['output_scale']
@@ -99,4 +100,8 @@ def main(params, num_epochs, checkpoint_dir):
     models.visualize(train_accuracies, test_accuracies, train_losses, test_losses, title)
 
 if __name__ == "__main__":
-    main(params, num_epochs, checkpoint_dir)
+    for param_list in param_lists:
+        param_combo = dict(zip(param_names, param_list))
+        checkpoint_dir = os.path.join(checkpoint_parent_dir, '_'.join([f"{param_name}:{value}" for param_name, value in param_combo.items()]))
+        os.makedirs(checkpoint_dir, exist_ok=True)
+        main(param_combo, num_epochs, checkpoint_dir)
