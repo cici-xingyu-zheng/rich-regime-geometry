@@ -33,14 +33,14 @@ np.random.seed(seed)
 param_names = ['optimizer', 'weight_scale', 'train_size', 'output_scale', 'weight_decay']
 
 param_lists = [ 
-     ['AdamW', 10, 2000, 1,  0.001],
-     ['AdamW', 10, 2000, 1,  0],
+    #  ['AdamW', 10, 2000, 1,  0],
+    #  ['AdamW', 10, 2000, 1,  0.001],
      ['AdamW', 100, 2000, 1,  0],
      ['AdamW', 500, 2000, 1,  0],
 ]
 
 checkpoint_parent_dir = '/data/cici/Geometry/new/checkpoints'
-epochs = [1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 100, 200, 300, 400, 500] 
+epochs = [1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 100] 
 
 # standard transform for EMNIST
 transform = transforms.Compose([

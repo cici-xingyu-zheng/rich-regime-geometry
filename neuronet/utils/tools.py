@@ -6,13 +6,15 @@ from neuronet.utils import models
 
 num_classes = 47
 
-
 def get_models(param_combo, checkpoint_parent_dir, output_parent_dir, epochs, device):
-
+    '''
+    Load model from checkpoint directory, and set output directory
+    '''
     subdir = '_'.join([f"{param_name}:{value}" for param_name, value in param_combo.items()])
     checkpoint_dir = os.path.join(checkpoint_parent_dir, subdir)
     output_dir = os.path.join(output_parent_dir, subdir)
     os.makedirs(output_dir, exist_ok=True)
+
     # Load trained networks:
     MLPmodels = []
     for epoch in epochs:
@@ -25,6 +27,7 @@ def get_models(param_combo, checkpoint_parent_dir, output_parent_dir, epochs, de
 
 def flatten_activations(activations):
     """
+    Helper func for get_layer_activations().
     Flatten the activations tensor by combining the non-batch dimensions.
 
     Args:
@@ -48,15 +51,16 @@ def flatten_activations(activations):
 
 
 def get_layer_activations(model, inputs, layer_name):
-    # Initialize an empty list to store the layer activations
+    '''
+    Output batch wise layer activations
+    '''
     activations = [] 
 
     def hook(module, input, output):
-        # Define a hook function to capture the layer activations
-        # This function will be called whenever the specified layer is activated during the forward pass
-        activations.append(output.detach().cpu().numpy())  # Append the layer activations to the 'activations' list
+        '''capture the layer activations'''
+        # will be called whenever the specified layer is activated during the forward pass
+        activations.append(output.detach().cpu().numpy())  
     
-    # Initialize a variable to store the hook handle
     handle = None 
 
     for name, module in model.named_modules():
@@ -65,21 +69,21 @@ def get_layer_activations(model, inputs, layer_name):
             # If the current module name matches the specified layer name
             handle = module.register_forward_hook(hook)  # Register the hook function to the module
     
-    # Perform a forward pass of the model on the given inputs
+    # forward pass 
     model(inputs) 
 
     if handle is not None:
-        # If a hook was registered (i.e., the specified layer was found)
-        # Remove the hook to avoid any potential memory leaks
+        # If a specified layer was found, remove
         handle.remove()  
 
     activations = np.concatenate(activations, axis=0)
 
-    # added for conv layers
+    # Added for conv layers
     flattened_activations = flatten_activations(activations)
 
     # Return the captured layer activations (assuming only one activation tensor is captured)
     return flattened_activations 
+
 
 def reorganize_dict_to_list(dictionary):
     """
@@ -109,7 +113,11 @@ def reorganize_dict_to_list(dictionary):
 
 
 def get_model_activation(MLPmodels, activation_dir, test_dataloader, device, epochs):
-
+    '''
+    Main function of getting activations from a list of model checkpoints.
+    Output each layer's activations at each checkpoint to an np array.
+    # of Samples in classes was chosen as the min of all classes to keep the shape consistent. 
+    '''
     layer_names = [name for name, _ in MLPmodels[0].named_modules()]
     for i, model in enumerate(MLPmodels):
         print(f'model: {model}')

@@ -1,5 +1,7 @@
 /data/
 /plotting/
 /replicaMFT/activations/
+/replicaMFT/scripts_copies/
 /neuronet/utils/analysis_old_copy.py
 /scripts/get_jacobians.py
+/manifold_environment.txt
