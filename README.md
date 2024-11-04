@@ -21,7 +21,7 @@ conda env create -f model_training_environment.yml
 conda env create -f manifold_environment_simple.yml
 ```
 
-To set up the network module:
+To set up the `neuronet` module:
 ```bash
 source setup_env.sh
 ```
