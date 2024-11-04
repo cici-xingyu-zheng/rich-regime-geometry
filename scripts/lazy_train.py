@@ -39,7 +39,6 @@ param_lists = [
      ['AdamW', 10, 2000, 1,  0.001],
      ['AdamW', 10, 2000, 1,  0],
      ['AdamW', 100, 2000, 1,  0],
-     ['AdamW', 500, 2000, 1,  0],
 ]
 
 checkpoint_parent_dir = '/data/cici/Geometry/new/checkpoints'

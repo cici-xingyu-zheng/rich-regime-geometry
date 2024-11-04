@@ -33,10 +33,9 @@ np.random.seed(seed)
 param_names = ['optimizer', 'weight_scale', 'train_size', 'output_scale', 'weight_decay']
 
 param_lists = [ 
-    #  ['AdamW', 10, 2000, 1,  0],
-    #  ['AdamW', 10, 2000, 1,  0.001],
+     ['AdamW', 10, 2000, 1,  0],
+     ['AdamW', 10, 2000, 1,  0.001],
      ['AdamW', 100, 2000, 1,  0],
-     ['AdamW', 500, 2000, 1,  0],
 ]
 
 checkpoint_parent_dir = '/data/cici/Geometry/new/checkpoints'
